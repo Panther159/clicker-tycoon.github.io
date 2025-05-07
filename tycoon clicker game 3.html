@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Clicker Tycoon - Multi-Level Mayhem</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transition */
+            /* Default: Space Background */
+            background-color: #000000;
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 50px 200px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2.5px 2.5px at 200px 310px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 230px 60px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 320px 180px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 400px 400px;
+            color: #f0f0f0;
+        }
+
+        /* --- Sewer Background Theme --- */
+        body.level-sewer {
+            background-color: #3a3a2a; /* Murky green/brown */
+            background-image: none; /* Remove stars */
+            color: #aabb99; /* Lighter murky green text */
+        }
+        body.level-sewer .container {
+            background-color: rgba(10, 25, 10, 0.85); /* Dark green container */
+            border: 1px solid #556b2f; /* Dark olive green border */
+            box-shadow: 0 6px 20px rgba(50, 100, 50, 0.1); /* Subtle green glow */
+        }
+        body.level-sewer h1 { color: #90ee90; text-shadow: 0 0 5px rgba(80, 180, 80, 0.5); } /* Light green title */
+        body.level-sewer h2 { color: #98fb98; border-bottom: 1px dashed #556b2f; } /* Pale green subheadings */
+        body.level-sewer #moneyDisplay { color: #e0ffc0; text-shadow: 0 0 8px rgba(150, 250, 150, 0.5); } /* Very light green money */
+        body.level-sewer button { background-color: #556b2f; border: 1px solid #8fbc8f; } /* Olive/Dark sea green buttons */
+        body.level-sewer button:hover { background-color: #8fbc8f; border-color: #ffffff; box-shadow: 0 0 10px rgba(143, 188, 143, 0.5); }
+        body.level-sewer button:disabled { background-color: #4a5a4a; color: #778877; border-color: #556b2f; }
+        body.level-sewer .info { color: #b0c4b1; }
+        body.level-sewer .cost { color: #ffb380; } /* Orange/brown cost */
+        body.level-sewer #passiveIncomeDisplay { color: #d8bfd8; } /* Thistle purple */
+        body.level-sewer .current-level { color: #99aa99; }
+
+        .container {
+            background-color: rgba(10, 10, 25, 0.85);
+            border: 1px solid #445;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(100, 100, 255, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #bbe1fa;
+            text-shadow: 0 0 5px rgba(100, 150, 255, 0.5);
+        }
+        h2 {
+            font-size: 1.3em;
+            color: #9bf6ff;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #445;
+            padding-bottom: 5px;
+        }
+        #moneyDisplay {
+            font-size: 2em;
+            color: #a0ffaa;
+            margin: 15px 0;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(80, 250, 123, 0.5);
+        }
+        button {
+            background-color: #3a506b;
+            color: white;
+            border: 1px solid #5bc0be;
+            padding: 10px 18px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 8px 5px;
+            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; /* Added transition */
+            min-width: 180px;
+            text-align: left;
+            position: relative;
+        }
+        button .upgrade-name {
+             font-weight: bold;
+        }
+        button .upgrade-details {
+             display: block;
+             font-size: 0.8em;
+             opacity: 0.8;
+        }
+
+        button:hover {
+            background-color: #5bc0be;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(91, 192, 190, 0.5);
+        }
+        button:disabled {
+            background-color: #2a3a4a;
+            color: #667;
+            border-color: #445;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .upgrade-section, .automation-section, .factory-section, .level-section, .level2-section { /* Added level sections */
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #445;
+        }
+        .info {
+            font-size: 0.9em;
+            color: #bdbdbd;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+         .cost {
+            font-weight: bold;
+            color: #ff8a80;
+         }
+         #passiveIncomeDisplay {
+            margin-top: 10px;
+            font-size: 1em;
+            color: #d1aaff;
+            font-weight: bold;
+         }
+         .upgrade-container {
+             margin-bottom: 15px;
+             padding: 10px;
+             background-color: rgba(0, 0, 0, 0.1);
+             border-radius: 4px;
+         }
+         .current-level {
+             font-size: 0.85em;
+             color: #aaa;
+             margin-top: 4px;
+         }
+         /* Style for the UFO sound iframe container */
+         .sound-container {
+            margin: 15px 0;
+            display: inline-block; /* Or block, depending on desired layout */
+            vertical-align: middle; /* Align with click button if inline */
+         }
+         /* Hide level 2 content initially */
+         .level2-content {
+            display: none;
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="gameTitle">Widget Clicker Tycoon - Galactic Edition</h1>
+        <div id="levelDisplay">Level: 1 - Space Cantina</div>
+
+        <div>
+            Credits: <span id="moneyDisplay">$0.00</span>
+        </div>
+        <div id="passiveIncomeDisplay">
+            Income/sec: $0.00
+        </div>
+
+        <button id="clickButton" onclick="manualClick()">
+             <span class="upgrade-name">Produce & Sell Widget</span>
+             <span class="upgrade-details">Earns: $<span id="clickValueDisplay">1.00</span></span>
+        </button>
+
+        <!-- UFO Sound Button -->
+        <div class="sound-container">
+             <iframe width="110" height="200" src="https://www.myinstants.com/instant/ufo-landing-46140/embed/" frameborder="0" scrolling="no"></iframe>
+        </div>
+
+        <!-- ======================= -->
+        <!-- LEVEL 1 CONTENT         -->
+        <!-- ======================= -->
+        <div id="level1Content">
+            <!-- Manual Production Upgrades -->
+            <div class="upgrade-section">
+                <h2>Manual Production Array</h2>
+                 <!-- ... (Existing Level 1 Manual upgrades remain here) ... -->
+                 <div class="upgrade-container">
+                    <button id="upgradeClickButton1" onclick="buyClickUpgrade(1)" disabled>
+                        <span class="upgrade-name">Sharper Nanoblades</span>
+                        <span class="upgrade-details">+<span id="clickUpgrade1PowerDisplay">1</span> Credits/click</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="clickUpgrade1CostDisplay">$10.00</span></div>
+                    <div class="current-level">Level: <span id="clickUpgrade1LevelDisplay">0</span></div>
+                </div>
+                 <div class="upgrade-container">
+                     <button id="upgradeClickButton2" onclick="buyClickUpgrade(2)" disabled>
+                        <span class="upgrade-name">Ergonomic Interface</span>
+                        <span class="upgrade-details">+<span id="clickUpgrade2PowerDisplay">5</span> Credits/click</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="clickUpgrade2CostDisplay">$100.00</span></div>
+                     <div class="current-level">Level: <span id="clickUpgrade2LevelDisplay">0</span></div>
+                </div>
+                 <div class="upgrade-container">
+                     <button id="upgradeClickButton3" onclick="buyClickUpgrade(3)" disabled>
+                        <span class="upgrade-name">Quantum Entanglement Clicker</span>
+                        <span class="upgrade-details">+<span id="clickUpgrade3PowerDisplay">25</span> Credits/click</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="clickUpgrade3CostDisplay">$1000.00</span></div>
+                     <div class="current-level">Level: <span id="clickUpgrade3LevelDisplay">0</span></div>
+                </div>
+            </div>
+
+            <!-- Automation: Assistants  -->
+            <div class="automation-section">
+                 <h2>Assistant Drones</h2>
+                 <!-- ... (Existing Level 1 Helper upgrades remain here) ... -->
+                 <div class="upgrade-container">
+                    <button id="buyHelperButton" onclick="buyHelper()" disabled>
+                         <span class="upgrade-name">Hire Assistant Drone</span>
+                         <span class="upgrade-details">Base +<span id="helperBaseIncomeDisplay">0.50</span> Credits/sec</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="helperCostDisplay">$50.00</span> | Drones: <span id="helperCountDisplay">0</span></div>
+                </div>
+                 <div class="upgrade-container">
+                     <button id="upgradeHelperButton1" onclick="buyHelperUpgrade(1)" disabled>
+                         <span class="upgrade-name">Drone Efficiency Training</span>
+                         <span class="upgrade-details">+10% Drone Income</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="helperUpgrade1CostDisplay">$200.00</span></div>
+                     <div class="current-level">Level: <span id="helperUpgrade1LevelDisplay">0</span> | Bonus: +<span id="helperUpgrade1BonusDisplay">0</span>%</div>
+                </div>
+                 <div class="upgrade-container">
+                     <button id="upgradeHelperButton2" onclick="buyHelperUpgrade(2)" disabled>
+                         <span class="upgrade-name">Advanced Drone AI</span>
+                         <span class="upgrade-details">+25% Drone Income</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="helperUpgrade2CostDisplay">$1500.00</span></div>
+                     <div class="current-level">Level: <span id="helperUpgrade2LevelDisplay">0</span> | Bonus: +<span id="helperUpgrade2BonusDisplay">0</span>%</div>
+                </div>
+            </div>
+
+            <!-- Automation: Factories   -->
+            <div class="factory-section">
+                <h2>Widget Factories</h2>
+                <!-- ... (Existing Level 1 Factory upgrades remain here) ... -->
+                <div class="upgrade-container">
+                    <button id="buyFactoryButton" onclick="buyFactory()" disabled>
+                         <span class="upgrade-name">Construct Factory</span>
+                         <span class="upgrade-details">Base +<span id="factoryBaseIncomeDisplay">10.00</span> Credits/sec</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="factoryCostDisplay">$5000.00</span> | Factories: <span id="factoryCountDisplay">0</span></div>
+                </div>
+                 <div class="upgrade-container">
+                     <button id="upgradeFactoryButton1" onclick="buyFactoryUpgrade(1)" disabled>
+                         <span class="upgrade-name">Optimized Assembly Lines</span>
+                         <span class="upgrade-details">+15% Factory Income</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="factoryUpgrade1CostDisplay">$10000.00</span></div>
+                     <div class="current-level">Level: <span id="factoryUpgrade1LevelDisplay">0</span> | Bonus: +<span id="factoryUpgrade1BonusDisplay">0</span>%</div>
+                </div>
+                 <div class="upgrade-container">
+                     <button id="upgradeFactoryButton2" onclick="buyFactoryUpgrade(2)" disabled>
+                         <span class="upgrade-name">Matter Replicators</span>
+                         <span class="upgrade-details">+30% Factory Income</span>
+                     </button>
+                    <div class="info">Cost: <span class="cost" id="factoryUpgrade2CostDisplay">$50000.00</span></div>
+                     <div class="current-level">Level: <span id="factoryUpgrade2LevelDisplay">0</span> | Bonus: +<span id="factoryUpgrade2BonusDisplay">0</span>%</div>
+                </div>
+            </div>
+        </div> <!-- End Level 1 Content -->
+
+        <!-- ======================= -->
+        <!-- LEVEL 2 CONTENT (Hidden)-->
+        <!-- ======================= -->
+        <div id="level2Content" class="level2-content">
+
+            <div class="level2-section">
+                <h2>Sewer Operations Center</h2>
+
+                <div class="upgrade-container">
+                    <button id="upgradeL2ClickButton1" onclick="buyL2Upgrade('click', 1)" disabled>
+                        <span class="upgrade-name">Grit-Resistant Button</span>
+                        <span class="upgrade-details">+<span id="l2ClickUpgrade1PowerDisplay">100</span> Credits/click</span>
+                    </button>
+                    <div class="info">Cost: <span class="cost" id="l2ClickUpgrade1CostDisplay">$250000.00</span></div>
+                    <div class="current-level">Level: <span id="l2ClickUpgrade1LevelDisplay">0</span></div>
+                </div>
+
+                 <div class="upgrade-container">
+                    <button id="buyL2HelperButton" onclick="buyL2Upgrade('helper', 1)" disabled>
+                        <span class="upgrade-name">Recruit Mutant Rat Assistant</span>
+                        <span class="upgrade-details">Base +<span id="l2HelperBaseIncomeDisplay">50.00</span> Credits/sec</span>
+                    </button>
+                    <div class="info">Cost: <span class="cost" id="l2HelperCostDisplay">$500000.00</span> | Rats: <span id="l2HelperCountDisplay">0</span></div>
+                </div>
+
+                 <div class="upgrade-container">
+                    <button id="buyL2FactoryButton" onclick="buyL2Upgrade('factory', 1)" disabled>
+                        <span class="upgrade-name">Build Sludge Processing Vat</span>
+                        <span class="upgrade-details">Base +<span id="l2FactoryBaseIncomeDisplay">250.00</span> Credits/sec</span>
+                    </button>
+                    <div class="info">Cost: <span class="cost" id="l2FactoryCostDisplay">$1000000.00</span> | Vats: <span id="l2FactoryCountDisplay">0</span></div>
+                </div>
+
+            </div>
+        </div><!-- End Level 2 Content -->
+
+
+        <!-- ======================= -->
+        <!-- LEVEL PROGRESSION       -->
+        <!-- ======================= -->
+        <div class="level-section">
+            <h2 id="levelProgressionTitle">Galactic Advancement</h2>
+            <button id="nextLevelButton" onclick="goToNextLevel()" disabled>
+                <span class="upgrade-name">Descend to the Undercity Sewers</span>
+                <span class="upgrade-details">Requires: $<span id="nextLevelCostDisplay">1,000,000.00</span></span>
+            </button>
+            <div class="info" id="nextLevelInfo">Reach the required credits to unlock the next stage!</div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Game State Variables ---
+        let money = 0;
+        let passiveIncome = 0;
+        let currentLevel = 1; // Start at level 1
+        const nextLevelCost = 1000000; // Cost to reach level 2
+
+        // Level 1 State (Existing variables)
+        let moneyPerClickBase = 1;
+        let clickUpgrades = {
+            1: { level: 0, cost: 10,    power: 1,   costMultiplier: 1.15 },
+            2: { level: 0, cost: 100,   power: 5,   costMultiplier: 1.20 },
+            3: { level: 0, cost: 1000,  power: 25,  costMultiplier: 1.25 }
+        };
+        let currentMoneyPerClick = moneyPerClickBase;
+        let helpers = 0;
+        let helperCost = 50;
+        let helperIncomeBase = 0.5;
+        let helperCostMultiplier = 1.20;
+        let helperUpgrades = {
+            1: { level: 0, cost: 200,   bonusPerLevel: 0.10, costMultiplier: 1.8 },
+            2: { level: 0, cost: 1500,  bonusPerLevel: 0.25, costMultiplier: 2.0 }
+        };
+        let currentHelperIncomeMultiplier = 1.0;
+        let factories = 0;
+        let factoryCost = 5000;
+        let factoryIncomeBase = 10.00;
+        let factoryCostMultiplier = 1.25;
+         let factoryUpgrades = {
+            1: { level: 0, cost: 10000,  bonusPerLevel: 0.15, costMultiplier: 1.9 },
+            2: { level: 0, cost: 50000,  bonusPerLevel: 0.30, costMultiplier: 2.2 }
+        };
+        let currentFactoryIncomeMultiplier = 1.0;
+
+        // Level 2 State
+        let l2ClickUpgrades = {
+            1: { level: 0, cost: 250000, power: 100, costMultiplier: 1.30 }
+        };
+        let l2Helpers = 0; // Mutant Rats
+        let l2HelperCost = 500000;
+        let l2HelperIncomeBase = 50.00;
+        let l2HelperCostMultiplier = 1.35;
+        // Add L2 Helper Upgrades later if needed
+
+        let l2Factories = 0; // Sludge Vats
+        let l2FactoryCost = 1000000;
+        let l2FactoryIncomeBase = 250.00;
+        let l2FactoryCostMultiplier = 1.40;
+        // Add L2 Factory Upgrades later if needed
+
+
+        // --- DOM Element References ---
+        const moneyDisplay = document.getElementById('moneyDisplay');
+        const passiveIncomeDisplay = document.getElementById('passiveIncomeDisplay');
+        const clickButton = document.getElementById('clickButton');
+        const clickValueDisplay = document.getElementById('clickValueDisplay');
+        const gameTitle = document.getElementById('gameTitle');
+        const levelDisplay = document.getElementById('levelDisplay');
+
+        // Level 1 Elements (Existing references)
+        const clickUpgradeButtons = { /* ... */ }; const clickUpgradeCostDisplays = { /* ... */ }; const clickUpgradePowerDisplays = { /* ... */ }; const clickUpgradeLevelDisplays = { /* ... */ };
+        const buyHelperButton = document.getElementById('buyHelperButton'); const helperCostDisplay = document.getElementById('helperCostDisplay'); const helperCountDisplay = document.getElementById('helperCountDisplay'); const helperBaseIncomeDisplay = document.getElementById('helperBaseIncomeDisplay'); const helperUpgradeButtons = { /* ... */ }; const helperUpgradeCostDisplays = { /* ... */ }; const helperUpgradeLevelDisplays = { /* ... */ }; const helperUpgradeBonusDisplays = { /* ... */ };
+        const buyFactoryButton = document.getElementById('buyFactoryButton'); const factoryCostDisplay = document.getElementById('factoryCostDisplay'); const factoryCountDisplay = document.getElementById('factoryCountDisplay'); const factoryBaseIncomeDisplay = document.getElementById('factoryBaseIncomeDisplay'); const factoryUpgradeButtons = { /* ... */ }; const factoryUpgradeCostDisplays = { /* ... */ }; const factoryUpgradeLevelDisplays = { /* ... */ }; const factoryUpgradeBonusDisplays = { /* ... */ };
+        // (Assign existing elements like before)
+        clickUpgradeButtons[1] = document.getElementById('upgradeClickButton1');
+        clickUpgradeCostDisplays[1] = document.getElementById('clickUpgrade1CostDisplay');
+        clickUpgradePowerDisplays[1] = document.getElementById('clickUpgrade1PowerDisplay');
+        clickUpgradeLevelDisplays[1] = document.getElementById('clickUpgrade1LevelDisplay');
+        clickUpgradeButtons[2] = document.getElementById('upgradeClickButton2');
+        clickUpgradeCostDisplays[2] = document.getElementById('clickUpgrade2CostDisplay');
+        clickUpgradePowerDisplays[2] = document.getElementById('clickUpgrade2PowerDisplay');
+        clickUpgradeLevelDisplays[2] = document.getElementById('clickUpgrade2LevelDisplay');
+        clickUpgradeButtons[3] = document.getElementById('upgradeClickButton3');
+        clickUpgradeCostDisplays[3] = document.getElementById('clickUpgrade3CostDisplay');
+        clickUpgradePowerDisplays[3] = document.getElementById('clickUpgrade3PowerDisplay');
+        clickUpgradeLevelDisplays[3] = document.getElementById('clickUpgrade3LevelDisplay');
+
+        helperUpgradeButtons[1] = document.getElementById('upgradeHelperButton1');
+        helperUpgradeCostDisplays[1] = document.getElementById('helperUpgrade1CostDisplay');
+        helperUpgradeLevelDisplays[1] = document.getElementById('helperUpgrade1LevelDisplay');
+        helperUpgradeBonusDisplays[1] = document.getElementById('helperUpgrade1BonusDisplay');
+        helperUpgradeButtons[2] = document.getElementById('upgradeHelperButton2');
+        helperUpgradeCostDisplays[2] = document.getElementById('helperUpgrade2CostDisplay');
+        helperUpgradeLevelDisplays[2] = document.getElementById('helperUpgrade2LevelDisplay');
+        helperUpgradeBonusDisplays[2] = document.getElementById('helperUpgrade2BonusDisplay');
+
+        factoryUpgradeButtons[1] = document.getElementById('upgradeFactoryButton1');
+        factoryUpgradeCostDisplays[1] = document.getElementById('factoryUpgrade1CostDisplay');
+        factoryUpgradeLevelDisplays[1] = document.getElementById('factoryUpgrade1LevelDisplay');
+        factoryUpgradeBonusDisplays[1] = document.getElementById('factoryUpgrade1BonusDisplay');
+        factoryUpgradeButtons[2] = document.getElementById('upgradeFactoryButton2');
+        factoryUpgradeCostDisplays[2] = document.getElementById('factoryUpgrade2CostDisplay');
+        factoryUpgradeLevelDisplays[2] = document.getElementById('factoryUpgrade2LevelDisplay');
+        factoryUpgradeBonusDisplays[2] = document.getElementById('factoryUpgrade2BonusDisplay');
+
+        // Level Progression Elements
+        const nextLevelButton = document.getElementById('nextLevelButton');
+        const nextLevelCostDisplay = document.getElementById('nextLevelCostDisplay');
+        const nextLevelInfo = document.getElementById('nextLevelInfo');
+        const levelProgressionTitle = document.getElementById('levelProgressionTitle');
+        const level1Content = document.getElementById('level1Content');
+        const level2Content = document.getElementById('level2Content');
+
+
+        // Level 2 Elements
+        const upgradeL2ClickButton1 = document.getElementById('upgradeL2ClickButton1');
+        const l2ClickUpgrade1PowerDisplay = document.getElementById('l2ClickUpgrade1PowerDisplay');
+        const l2ClickUpgrade1CostDisplay = document.getElementById('l2ClickUpgrade1CostDisplay');
+        const l2ClickUpgrade1LevelDisplay = document.getElementById('l2ClickUpgrade1LevelDisplay');
+
+        const buyL2HelperButton = document.getElementById('buyL2HelperButton');
+        const l2HelperBaseIncomeDisplay = document.getElementById('l2HelperBaseIncomeDisplay');
+        const l2HelperCostDisplay = document.getElementById('l2HelperCostDisplay');
+        const l2HelperCountDisplay = document.getElementById('l2HelperCountDisplay');
+
+        const buyL2FactoryButton = document.getElementById('buyL2FactoryButton');
+        const l2FactoryBaseIncomeDisplay = document.getElementById('l2FactoryBaseIncomeDisplay');
+        const l2FactoryCostDisplay = document.getElementById('l2FactoryCostDisplay');
+        const l2FactoryCountDisplay = document.getElementById('l2FactoryCountDisplay');
+
+        // --- Calculation Functions ---
+
+        function calculateMoneyPerClick() {
+            let totalClickPower = moneyPerClickBase;
+            // Level 1 Upgrades
+            for (const id in clickUpgrades) {
+                totalClickPower += clickUpgrades[id].level * clickUpgrades[id].power;
+            }
+            // Level 2 Upgrades (only add if level 2+)
+            if (currentLevel >= 2) {
+                for (const id in l2ClickUpgrades) {
+                    totalClickPower += l2ClickUpgrades[id].level * l2ClickUpgrades[id].power;
+                }
+            }
+            currentMoneyPerClick = totalClickPower;
+        }
+
+        function calculateHelperIncomeMultiplier() {
+             // Recalculate L1 multipliers if needed (using existing logic)
+             let multiplier = 1.0;
+             for (const id in helperUpgrades) {
+                 multiplier *= Math.pow(1 + helperUpgrades[id].bonusPerLevel, helperUpgrades[id].level);
+             }
+             currentHelperIncomeMultiplier = multiplier;
+
+             // Add L2 multiplier calculation here if L2 helper upgrades exist
+        }
+
+         function calculateFactoryIncomeMultiplier() {
+             // Recalculate L1 multipliers if needed (using existing logic)
+             let multiplier = 1.0;
+             for (const id in factoryUpgrades) {
+                 multiplier *= Math.pow(1 + factoryUpgrades[id].bonusPerLevel, factoryUpgrades[id].level);
+             }
+             currentFactoryIncomeMultiplier = multiplier;
+
+             // Add L2 multiplier calculation here if L2 factory upgrades exist
+        }
+
+        function calculatePassiveIncome() {
+            // Level 1 Income
+            const helperTotalIncome = helpers * helperIncomeBase * currentHelperIncomeMultiplier;
+            const factoryTotalIncome = factories * factoryIncomeBase * currentFactoryIncomeMultiplier;
+
+            // Level 2 Income (only add if level 2+)
+            let l2HelperTotalIncome = 0;
+            let l2FactoryTotalIncome = 0;
+            if (currentLevel >= 2) {
+                // Assuming base income for L2 helpers/factories for now
+                l2HelperTotalIncome = l2Helpers * l2HelperIncomeBase; // Add multipliers later if needed
+                l2FactoryTotalIncome = l2Factories * l2FactoryIncomeBase; // Add multipliers later if needed
+            }
+
+            passiveIncome = helperTotalIncome + factoryTotalIncome + l2HelperTotalIncome + l2FactoryTotalIncome;
+        }
+
+        // --- Core Game Functions ---
+
+        function manualClick() {
+            money += currentMoneyPerClick;
+            updateDisplay();
+        }
+
+        // --- Level 1 Buy Functions (Keep existing functions) ---
+        function buyClickUpgrade(id) {
+            const upgrade = clickUpgrades[id];
+            if (money >= upgrade.cost) {
+                money -= upgrade.cost;
+                upgrade.level++;
+                upgrade.cost *= upgrade.costMultiplier;
+                calculateMoneyPerClick();
+                updateDisplay();
+            }
+        }
+        function buyHelper() {
+             if (money >= helperCost) {
+                money -= helperCost;
+                helpers++;
+                helperCost *= helperCostMultiplier;
+                calculatePassiveIncome();
+                updateDisplay();
+            }
+        }
+        function buyHelperUpgrade(id) {
+             const upgrade = helperUpgrades[id];
+            if (money >= upgrade.cost) {
+                money -= upgrade.cost;
+                upgrade.level++;
+                upgrade.cost *= upgrade.costMultiplier;
+                calculateHelperIncomeMultiplier();
+                calculatePassiveIncome();
+                updateDisplay();
+            }
+        }
+        function buyFactory() {
+            if (money >= factoryCost) {
+                money -= factoryCost;
+                factories++;
+                factoryCost *= factoryCostMultiplier;
+                calculatePassiveIncome();
+                updateDisplay();
+            }
+        }
+        function buyFactoryUpgrade(id) {
+             const upgrade = factoryUpgrades[id];
+             if (money >= upgrade.cost) {
+                money -= upgrade.cost;
+                upgrade.level++;
+                upgrade.cost *= upgrade.costMultiplier;
+                calculateFactoryIncomeMultiplier();
+                calculatePassiveIncome();
+                updateDisplay();
+            }
+        }
+
+        // --- Level 2 Buy Functions ---
+        function buyL2Upgrade(type, id) {
+            if (currentLevel < 2) return; // Should not happen if buttons are disabled, but safety check
+
+            if (type === 'click') {
+                const upgrade = l2ClickUpgrades[id];
+                 if (money >= upgrade.cost) {
+                    money -= upgrade.cost;
+                    upgrade.level++;
+                    upgrade.cost *= upgrade.costMultiplier;
+                    calculateMoneyPerClick();
+                    updateDisplay();
+                 }
+            } else if (type === 'helper') { // Buying a base L2 helper (Rat)
+                 if (money >= l2HelperCost) {
+                    money -= l2HelperCost;
+                    l2Helpers++;
+                    l2HelperCost *= l2HelperCostMultiplier;
+                    calculatePassiveIncome();
+                    updateDisplay();
+                }
+            } else if (type === 'factory') { // Buying a base L2 factory (Vat)
+                 if (money >= l2FactoryCost) {
+                    money -= l2FactoryCost;
+                    l2Factories++;
+                    l2FactoryCost *= l2FactoryCostMultiplier;
+                    calculatePassiveIncome();
+                    updateDisplay();
+                }
+            }
+            // Add logic for specific L2 helper/factory *upgrades* later if needed
+        }
+
+
+        // --- Level Progression ---
+        function goToNextLevel() {
+            if (currentLevel === 1 && money >= nextLevelCost) {
+                money -= nextLevelCost;
+                currentLevel = 2;
+                setupLevel2();
+                updateDisplay(); // Update immediately after level change
+            }
+        }
+
+        function setupLevel2() {
+            // Change background and styles
+            document.body.classList.add('level-sewer');
+
+            // Update Titles/Text
+            gameTitle.textContent = "Widget Clicker Tycoon - Sewer Scavenger";
+            levelDisplay.textContent = "Level: 2 - Undercity Sewers";
+
+            // Hide Level 1 specific content (Optional, could leave it)
+             // level1Content.style.display = 'none';
+
+            // Show Level 2 content
+            level2Content.style.display = 'block';
+
+            // Hide or change the "Next Level" button section
+            nextLevelButton.style.display = 'none'; // Hide the button
+            nextLevelInfo.textContent = "Welcome to the murky depths!"; // Change the info text
+            levelProgressionTitle.textContent = "Sewer Status"; // Change section title
+
+            // Recalculate things affected by level change (maybe base income changes?)
+            // For now, recalculating passive income is sufficient due to new potential sources
+            calculatePassiveIncome();
+        }
+
+
+        function gameLoop() {
+            // Passive income calculation already includes potential L2 sources if currentLevel >= 2
+            money += passiveIncome / 10; // Grant income more smoothly (10 times per second)
+            updateDisplay(); // Update display frequently
+        }
+
+        // --- Update Display Function (Modified for Levels) ---
+        function updateDisplay() {
+            moneyDisplay.textContent = `$${money.toFixed(2)}`;
+            clickValueDisplay.textContent = currentMoneyPerClick.toFixed(2);
+            passiveIncomeDisplay.textContent = `Income/sec: $${(passiveIncome).toFixed(2)}`; // Adjust for faster loop
+
+            // --- Update Level 1 Elements ---
+            if (currentLevel === 1) { // Only update L1 buttons if on L1
+                 // Update Manual Click Upgrade Section
+                for (const id in clickUpgrades) {
+                    const upgrade = clickUpgrades[id];
+                    clickUpgradeCostDisplays[id].textContent = `$${upgrade.cost.toFixed(2)}`;
+                    clickUpgradePowerDisplays[id].textContent = upgrade.power.toFixed(0);
+                    clickUpgradeLevelDisplays[id].textContent = upgrade.level;
+                    clickUpgradeButtons[id].disabled = money < upgrade.cost;
+                }
+
+                // Update Helper (Drone) Section
+                helperCostDisplay.textContent = `$${helperCost.toFixed(2)}`;
+                helperCountDisplay.textContent = helpers;
+                helperBaseIncomeDisplay.textContent = helperIncomeBase.toFixed(2);
+                buyHelperButton.disabled = money < helperCost;
+                 for (const id in helperUpgrades) {
+                     const upgrade = helperUpgrades[id];
+                     helperUpgradeCostDisplays[id].textContent = `$${upgrade.cost.toFixed(2)}`;
+                     helperUpgradeLevelDisplays[id].textContent = upgrade.level;
+                     helperUpgradeBonusDisplays[id].textContent = ( (Math.pow(1 + upgrade.bonusPerLevel, upgrade.level) - 1) * 100 ).toFixed(0);
+                     helperUpgradeButtons[id].disabled = money < upgrade.cost;
+                }
+
+                // Update Factory Section
+                factoryCostDisplay.textContent = `$${factoryCost.toFixed(2)}`;
+                factoryCountDisplay.textContent = factories;
+                factoryBaseIncomeDisplay.textContent = factoryIncomeBase.toFixed(2);
+                buyFactoryButton.disabled = money < factoryCost;
+                for (const id in factoryUpgrades) {
+                     const upgrade = factoryUpgrades[id];
+                     factoryUpgradeCostDisplays[id].textContent = `$${upgrade.cost.toFixed(2)}`;
+                     factoryUpgradeLevelDisplays[id].textContent = upgrade.level;
+                     factoryUpgradeBonusDisplays[id].textContent = ( (Math.pow(1 + upgrade.bonusPerLevel, upgrade.level) - 1) * 100 ).toFixed(0);
+                     factoryUpgradeButtons[id].disabled = money < upgrade.cost;
+                }
+
+                // Update Next Level Button State
+                nextLevelCostDisplay.textContent = `$${nextLevelCost.toFixed(2)}`;
+                nextLevelButton.disabled = money < nextLevelCost;
+
+            } else if (currentLevel === 2) {
+                // Optionally disable or hide L1 buttons if desired
+                // e.g., buyHelperButton.disabled = true;
+
+                // --- Update Level 2 Elements ---
+                // L2 Click Upgrade
+                const l2ClickUpgrade1 = l2ClickUpgrades[1];
+                l2ClickUpgrade1CostDisplay.textContent = `$${l2ClickUpgrade1.cost.toFixed(2)}`;
+                l2ClickUpgrade1PowerDisplay.textContent = l2ClickUpgrade1.power.toFixed(0);
+                l2ClickUpgrade1LevelDisplay.textContent = l2ClickUpgrade1.level;
+                upgradeL2ClickButton1.disabled = money < l2ClickUpgrade1.cost;
+
+                // L2 Helper (Rats)
+                l2HelperCostDisplay.textContent = `$${l2HelperCost.toFixed(2)}`;
+                l2HelperCountDisplay.textContent = l2Helpers;
+                l2HelperBaseIncomeDisplay.textContent = l2HelperIncomeBase.toFixed(2);
+                buyL2HelperButton.disabled = money < l2HelperCost;
+
+                 // L2 Factory (Vats)
+                l2FactoryCostDisplay.textContent = `$${l2FactoryCost.toFixed(2)}`;
+                l2FactoryCountDisplay.textContent = l2Factories;
+                l2FactoryBaseIncomeDisplay.textContent = l2FactoryIncomeBase.toFixed(2);
+                buyL2FactoryButton.disabled = money < l2FactoryCost;
+
+            }
+        }
+
+        // --- Initialization ---
+        calculateMoneyPerClick();
+        calculateHelperIncomeMultiplier();
+        calculateFactoryIncomeMultiplier();
+        calculatePassiveIncome();
+        updateDisplay(); // Set initial display values and button states
+
+        // Start the game loop (Update 10 times per second for smoother income display)
+        setInterval(gameLoop, 100); // 100 milliseconds
+
+    </script>
+
+</body>
+</html>
